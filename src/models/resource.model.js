@@ -1,19 +1,55 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const resourceSchema = new mongoose.Schema({
-    name: String,
-    dateOfBirth: Date,
-    sex: String,
-    account: String,
-    status: String,
-    phoneNumber: String,
-    identityCard: String,
-    email: String,
-    contract: String,
-    startDate: Date,
-    endDate: Date
-});
-
-const Resource = mongoose.model('resource', resourceSchema);
+// Kiểm tra xem mô hình đã tồn tại chưa, nếu có thì sử dụng nó
+const Resource = mongoose.models.Resource || mongoose.model('Resource', new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    dateOfBirth: {
+        type: Date,
+        required: true,
+    },
+    sex: {
+        type: String,
+        required: true,
+    },
+    account: {
+        type: String,
+        required: true,
+    },
+    status: {
+        type: String,
+        required: true,
+    },
+    phoneNumber: {
+        type: String,
+        required: true,
+    },
+    identityCard: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    contract: {
+        type: String,
+        required: true,
+    },
+    startDate: {
+        type: Date,
+        required: true,
+    },
+    endDate: {
+        type: Date,
+        required: true,
+    },
+    projects: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+    }],
+}));
 
 module.exports = Resource;
