@@ -74,16 +74,42 @@ const getProjectById = async (req, res) => {
 const updateProject = async (req, res) => {
     try {
         await initDB();
-        const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).populate('members');
-        if (!project) {
+
+        // Cập nhật Project theo ID
+        const updatedProject = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+        // Kiểm tra xem Project có tồn tại không
+        if (!updatedProject) {
             return res.status(404).send('Project not found');
         }
-        res.status(200).send(project);
+
+        // Cập nhật Resource với Project ID mới
+        if (req.body.members) {
+            // Lấy danh sách thành viên hiện tại của Project
+            const existingMembers = updatedProject.members;
+
+            // Cập nhật các Resource với Project ID mới
+            await Resource.updateMany(
+                { _id: { $in: req.body.members } },
+                { $addToSet: { projects: updatedProject._id } }
+            );
+
+            // Xóa Project ID khỏi các Resource không còn là thành viên
+            await Resource.updateMany(
+                { _id: { $in: existingMembers }, _id: { $nin: req.body.members } },
+                { $pull: { projects: updatedProject._id } }
+            );
+        }
+
+        // Populate members và trả về Project đã được cập nhật
+        const populatedProject = await Project.findById(updatedProject._id).populate('members');
+        res.status(200).send(populatedProject);
     } catch (err) {
-        console.error(err);
+        console.error('Error updating project:', err);
         res.status(400).send('Bad Request');
     }
 };
+
 
 
 // Delete: Xóa project theo ID

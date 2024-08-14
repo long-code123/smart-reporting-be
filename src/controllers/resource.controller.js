@@ -76,11 +76,34 @@ const getResourceById = async (req, res) => {
 const updateResource = async (req, res) => {
     try {
         await initDB();
+
+        // Cập nhật Resource theo ID
         const resource = await Resource.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+        // Kiểm tra xem Resource có tồn tại không
         if (!resource) {
             console.log('Resource not found for update with ID:', req.params.id);
             return res.status(404).send('Resource not found');
         }
+
+        // Nếu có projects trong yêu cầu cập nhật, cập nhật Project với Resource ID mới
+        if (req.body.projects) {
+            // Lấy danh sách project IDs từ yêu cầu
+            const projectIds = req.body.projects;
+
+            // Cập nhật các project để thêm resource vào mảng members
+            await Project.updateMany(
+                { _id: { $in: projectIds } },
+                { $addToSet: { members: resource._id } }
+            );
+
+            // Xóa resource khỏi các projects không còn liên quan
+            await Project.updateMany(
+                { _id: { $nin: projectIds } },
+                { $pull: { members: resource._id } }
+            );
+        }
+
         console.log('Resource updated successfully:', resource);
         res.status(200).send(resource);
     } catch (err) {
