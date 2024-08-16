@@ -1,7 +1,23 @@
-const mongoose = require('mongoose');
+import mongoose, { Document, Schema } from 'mongoose';
 
-// Kiểm tra xem mô hình đã tồn tại chưa, nếu có thì sử dụng nó
-const Resource = mongoose.models.Resource || mongoose.model('Resource', new mongoose.Schema({
+// Định nghĩa kiểu cho tài liệu Resource
+export interface IResource extends Document {
+    name: string;
+    dateOfBirth: Date;
+    sex: string;
+    account: string;
+    status: string;
+    phoneNumber: string;
+    identityCard: string;
+    email: string;
+    contract: string;
+    startDate: Date;
+    endDate: Date;
+    projects: mongoose.Types.ObjectId[];
+}
+
+// Tạo Schema cho Resource
+const ResourceSchema: Schema = new Schema({
     name: {
         type: String,
         required: true,
@@ -50,6 +66,9 @@ const Resource = mongoose.models.Resource || mongoose.model('Resource', new mong
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Project',
     }],
-}));
+});
 
-module.exports = Resource;
+// Kiểm tra xem mô hình đã tồn tại chưa, nếu có thì sử dụng nó
+const Resource = mongoose.models.Resource || mongoose.model<IResource>('Resource', ResourceSchema);
+
+export default Resource;

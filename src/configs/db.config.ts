@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const uri = 'mongodb+srv://nguyenbalong250902:nguyenbalong@long.jcpqjcd.mongodb.net/smart-reporting';
+const uri: string = 'mongodb+srv://nguyenbalong250902:nguyenbalong@long.jcpqjcd.mongodb.net/smart-reporting';
 
-const connectDB = async () => {
+const connectDB = async (): Promise<void> => {
     try {
         await mongoose.connect(uri);
         console.log('MongoDB connected successfully');
@@ -12,4 +12,4 @@ const connectDB = async () => {
     }
 };
 
-module.exports = connectDB;
+export default connectDB;

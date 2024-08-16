@@ -1,7 +1,19 @@
-const mongoose = require('mongoose');
+import mongoose, { Document, Schema } from 'mongoose';
 
-// Kiểm tra xem mô hình đã tồn tại chưa, nếu có thì sử dụng nó
-const Project = mongoose.models.Project || mongoose.model('Project', new mongoose.Schema({
+// Định nghĩa kiểu cho tài liệu Project
+export interface IProject extends Document {
+    projectName: string;
+    status: 'ongoing' | 'completed' | 'on hold';
+    leader: string;
+    members: mongoose.Types.ObjectId[];
+    cost: number;
+    progress: number;
+    startDate: Date;
+    endDate: Date;
+}
+
+// Tạo Schema cho Project
+const ProjectSchema: Schema = new Schema({
     projectName: {
         type: String,
         required: true,
@@ -38,6 +50,9 @@ const Project = mongoose.models.Project || mongoose.model('Project', new mongoos
         type: Date,
         required: true,
     },
-}));
+});
 
-module.exports = Project;
+// Kiểm tra xem mô hình đã tồn tại chưa, nếu có thì sử dụng nó
+const Project = mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema);
+
+export default Project;
