@@ -1,41 +1,52 @@
 import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import connectDB from './src/configs/db.config';
+import logger from './src/utils/loggers.utils';
 
-// Tải biến môi trường từ file .env
+// Load environment variables from .env file
 dotenv.config();
 
-// Tạo ứng dụng Express
+// Create Express app
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
 
-// Sử dụng cors với biến môi trường
-app.use(cors({
-    origin: process.env.CORS_ORIGIN, // Sử dụng biến môi trường, nếu không có thì mặc định là 'http://localhost:5173'
-    credentials: true, // Cho phép gửi cookie và các thông tin xác thực khác
-}));
+// Import CORS middleware
+import { corMiddleware } from './src/middlewares/cor.middleware';
+app.use(corMiddleware);
 
-// Import các route
+// Import routes
 import resourceRoutes from './src/routes/resource.route';
 import projectRoutes from './src/routes/project.route';
 
-// Middleware để log thời gian
-app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log('Time:', Date.now());
-    next();
-});
+// Global database initialization function
+global.initDB = async (): Promise<void> => {
+    if (mongoose.connection.readyState === 0) {
+        await connectDB();
+    }
+};
 
-// Sử dụng các route
+// Use routes
 app.use('/resources', resourceRoutes);
 app.use('/projects', projectRoutes);
 
-// Lấy port từ biến môi trường
+// Import 404 and error handling middleware
+import { notFoundMiddleware } from './src/middlewares/error404.middleware';
+import { errorMiddleware } from './src/middlewares/error.middleware';
+
+// Use 404 middleware
+app.use(notFoundMiddleware);
+
+// Use error middleware
+app.use(errorMiddleware);
+
+// Get port from environment variables
 const port = process.env.PORT;
 
-// Khởi động server
+// Start server
 app.listen(port, () => {
-    console.log(`Server running at port ${port}`);
+    logger.info(`Server running at port ${port}`);
 });
